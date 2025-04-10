@@ -44,15 +44,15 @@ model = model.fit(X, Y)
 y_pred = model.predict(X)
 residual = (y_pred-Y)*100/Y
 
-#plt.figure()
-#plt.subplot(2,1,1)
-#plt.plot(Y, y_pred, '.')
-#plt.xlabel('smoothness (true)')
-#plt.ylabel('smoothness (estimated)')
-#plt.subplot(2,1,2)
-#plt.hist(residual,30)
+plt.figure()
+plt.subplot(2,1,1)
+plt.plot(Y, y_pred, '.')
+plt.xlabel('smoothness (true)')
+plt.ylabel('smoothness (estimated)')
+plt.subplot(2,1,2)
+plt.hist(residual,30)
 
-#plt.show()
+plt.show()
 
 
 # Add offset attribute
@@ -158,7 +158,7 @@ for train_index, test_index in CV.split(X,Y):
 
     k+=1
 
-#plt.show()
+plt.show()
 
 # Display results
 print('\n')

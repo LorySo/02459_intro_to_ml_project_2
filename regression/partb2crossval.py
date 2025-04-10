@@ -9,7 +9,6 @@ import torch
 from baseline import baseline_inner, baseline_outer
 from ann import ann_inner, ann_outer
 from linear_regression import linear_regression_inner, linear_regression_outer
-from dtuimldmtools import jeffrey_interval, mcnemar
 
 
 features = pd.read_csv("breast_cancer_wisconsin_features.csv")
@@ -55,8 +54,8 @@ lambdas = np.power(10.0,range(-4,10))
 
 ##1b
 
-K1 = 10  # Outer CV
-K2 = 10  # Inner CV
+K1 = 10  # Outer
+K2 = 10  # Inner
 
 min_n_hidden_units = 1
 max_n_hidden_units = 10

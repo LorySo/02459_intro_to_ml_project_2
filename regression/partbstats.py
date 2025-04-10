@@ -10,7 +10,6 @@ import scipy.stats
 from baseline import baseline_inner, baseline_outer
 from ann import ann_inner, ann_outer
 from linear_regression import linear_regression_inner, linear_regression_outer
-from dtuimldmtools import jeffrey_interval, mcnemar
 
 
 features = pd.read_csv("breast_cancer_wisconsin_features.csv")
@@ -65,16 +64,6 @@ n_rep_ann = 3
 max_iter = 1000
 
 CV_1 = sklearn.model_selection.KFold(K1, shuffle=True)
-hidden_units_ann = np.empty(K1)
-gen_error_ann = np.empty(K1)
-opt_lambdas_lr = np.empty(K1)
-gen_error_lr = np.empty(K1)
-gen_error_baseline = np.empty(K1)
-
-test_error_outer_baseline = []
-test_errors_outer_ANN = []
-lambda_ANN = []
-
 
 threshold=0.05
 fixed_lambda = 10
@@ -92,7 +81,7 @@ for (train_index_outer, test_index_outer) in CV_1.split(X):
     X_test_outer = X[test_index_outer]
     y_test_outer = Y[test_index_outer]
         
-    # Baseline predictions
+    # Baseline
     mean_y = np.mean(y_train_outer)
     y_est_test_outer_baseline = mean_y     
     test_error = np.sum((y_est_test_outer_baseline - y_test_outer)**2) / float(len(y_test_outer))
@@ -125,17 +114,25 @@ for (train_index_outer, test_index_outer) in CV_1.split(X):
     # RLR
     rlr_preds[test_index_outer] = linear_regression_outer(train_index_outer, test_index_outer, fixed_lambda)
 
-# Jeffrey Interval and McNemar's Test
-[thetahat_baseline, CIA_baseline] = jeffrey_interval(Y, baseline_preds, alpha=threshold)
-[thetahat_ann, CIA_ann] = jeffrey_interval(Y, ann_preds, alpha=threshold)
-[thetahat_rlr, CIA_rlr] = jeffrey_interval(Y, rlr_preds, alpha=threshold)
 
-print(f"Baseline, Thetahat: {thetahat_baseline}, CI: {CIA_baseline}")
-print(f"ANN, Thetahat: {thetahat_ann}, CI: {CIA_ann}")
-print(f"RLR, Thetahat: {thetahat_rlr}, CI: {CIA_rlr}")
+t_stat_blann, p_value_blann = scipy.stats.ttest_rel(baseline_preds, ann_preds)
+print(t_stat_blann, p_value_blann)
+t_stat_blrlr, p_value_blrlr = scipy.stats.ttest_rel(baseline_preds, rlr_preds)
+print(t_stat_blrlr, p_value_blrlr)
+t_stat_annrlr, p_value_annrlr = scipy.stats.ttest_rel(ann_preds, rlr_preds)
+print(t_stat_annrlr, p_value_annrlr)
 
+alpha = 0.05
 
-t_stat, p_value = scipy.stats.ttest_rel(baseline_preds, ann_preds)
-t_stat, p_value = scipy.stats.ttest_rel(baseline_preds, rlr_preds)
-t_stat, p_value = scipy.stats.ttest_rel(ann_preds, rlr_preds)
+bl_ann = baseline_preds-ann_preds
+CI = scipy.stats.t.interval(1-alpha, len(bl_ann)-1, loc=np.mean(bl_ann), scale=scipy.stats.sem(bl_ann))
+print("CI : ", np.round(CI, 15))
+
+bl_rlr = baseline_preds-rlr_preds
+CI = scipy.stats.t.interval(1-alpha, len(bl_rlr)-1, loc=np.mean(bl_rlr), scale=scipy.stats.sem(bl_rlr))
+print("CI : ", np.round(CI, 15))
+
+ann_rlr = ann_preds-rlr_preds
+CI = scipy.stats.t.interval(1-alpha, len(ann_rlr)-1, loc=np.mean(ann_rlr), scale=scipy.stats.sem(ann_rlr))
+print("CI : ", np.round(CI, 15))
 
